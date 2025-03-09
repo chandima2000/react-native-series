@@ -13,12 +13,16 @@ export default function menu() {
     const theme = colorScheme === 'dark' ? Colors.dark : Colors.light;
 
     const Container = Platform.OS === 'web' ? ScrollView : SafeAreaView;
+   
     return (
-        <Container>
+        <Container >
 
             <FlatList 
+                className='pt-10 pb-20'
                 data={MENU_ITEMS}
                 keyExtractor={item => item.id}
+                showsVerticalScrollIndicator={false}
+                
                 renderItem={({item}) => (
                     <View>
                         <View>
