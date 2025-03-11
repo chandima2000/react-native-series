@@ -1,11 +1,12 @@
 import { Pressable, Text, TextInput, View, StyleSheet, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
 import {data} from '@/data/todos';
 import Octicons from '@expo/vector-icons/Octicons';
 import Animated, { LinearTransition } from 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ThemeContext } from "@/context/ThemeContext";
 
@@ -25,6 +26,47 @@ export default function Index() {
   const [load, error] = useFonts({
     Inter_500Medium,
   })
+
+  // Reading object
+  useEffect (() => {
+
+    const getData = async () => {
+      try {
+        const jsonValue = await AsyncStorage.getItem('crudApp');
+        const getStoreData = jsonValue != null ? JSON.parse(jsonValue) : null;
+        if (getStoreData && getStoreData.length) {
+          setTodos(getStoreData.sort((a: { id: number; }, b: { id: number; }) => b.id - a.id))
+        }
+        else{
+          setTodos(data.sort((a, b) => b.id - a.id))
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    };
+
+    getData();
+
+  },[]);
+
+
+  // Storing object
+  useEffect (() => {
+
+    const storeData = async () => {
+      try {
+        const jsonValue = JSON.stringify(todos);
+        await AsyncStorage.setItem('crudApp', jsonValue);
+      } catch (e) {
+        console.error(e)
+      }
+    };
+
+    storeData();
+
+  }, [todos])
+
+
 
   if (!load && !error){
     return null;
@@ -77,7 +119,7 @@ export default function Index() {
           placeholderTextColor="gray"
           value={text}
           onChangeText={setText}
-          />
+        />
         <Pressable style={styles.addButton} onPress={addTodo}>
           <Text style={styles.addButtonText}>Add</Text>
         </Pressable>
