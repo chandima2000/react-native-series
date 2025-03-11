@@ -1,14 +1,26 @@
 import { Pressable, Text, TextInput, View, StyleSheet, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
 import {data} from '@/data/todos';
+import Octicons from '@expo/vector-icons/Octicons';
+import { Colors } from "@/constants/Color";
+
+import { ThemeContext } from "@/context/ThemeContext";
 
 export default function Index() {
 
   const [todos, setTodos] = useState(data.sort((a, b) => b.id - a.id));
   const [text, setText] = useState('');
+
+  const themeContext= useContext(ThemeContext);
+
+  if (!themeContext) {
+    throw new Error("ThemeContext must be used within a ThemeProvider");
+  }
+
+  const { colorScheme, setColorScheme, theme } = themeContext;
 
   const [load, error] = useFonts({
     Inter_500Medium,
@@ -17,6 +29,8 @@ export default function Index() {
   if (!load && !error){
     return null;
   }
+
+  const styles = createStyles(theme)
 
   const addTodo = () => {
     if (text.trim()) {
@@ -55,10 +69,10 @@ export default function Index() {
   )
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {backgroundColor:theme.background}]}>
       <View style={styles.insideContainer}>
         <TextInput 
-          style={styles.textInput}
+          style={[styles.textInput]}
           placeholder="Enter new Todo"
           placeholderTextColor="gray"
           value={text}
@@ -67,6 +81,16 @@ export default function Index() {
         <Pressable style={styles.addButton} onPress={addTodo}>
           <Text style={styles.addButtonText}>Add</Text>
         </Pressable>
+        
+      <Pressable 
+        onPress={() => {setColorScheme(colorScheme === 'light' ? 'dark' : 'light')}}
+        style={styles.toggleButtonContainer}
+        >
+        {colorScheme === 'dark' ? 
+            <Octicons name='moon' size={36} color={theme.text} selectable={undefined} style ={styles.toggleButton}/> : 
+            <Octicons name='sun' size={36} color={theme.text} selectable={undefined} style ={styles.toggleButton}/>}
+      </Pressable>
+
       </View>
       <FlatList
           data={todos}
@@ -77,64 +101,79 @@ export default function Index() {
   );
 }
 
+type themeType = {
+  text: string,
+  background: string,
+  icon: string,
+  button: string,
+}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'black',
-  },
-  insideContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-    padding: 10,
-    width: '100%',
-    maxWidth: 1024,
-    marginHorizontal: 'auto',
-    pointerEvents: 'auto',
-  },
-  textInput: {
-    flex: 1,
-    borderColor: 'gray',
-    borderWidth: 1,
-    borderRadius: 5,
-    padding: 10,
-    marginRight: 10,
-    fontSize: 18,
-    fontFamily: 'Inter_500Medium',
-    minWidth: 0,
-    color: 'white'
-  },
-  addButton: {
-    backgroundColor: 'white',
-    borderRadius: 5,
-    padding: 10,
-  },
-  addButtonText: {
-    fontSize: 18,
-    color: 'black',
-  },
-  todoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 4,
-    padding: 10,
-    borderBottomColor: 'gray',
-    borderBottomWidth: 1,
-    width: '100%',
-    maxWidth: 1024,
-    marginHorizontal: 'auto',
-    pointerEvents: 'auto',
-  },
-  todoText: {
-    flex: 1,
-    fontSize: 18,
-    fontFamily: 'Inter_500Medium',
-    color: 'white',
-  },
-  completedText: {
-    textDecorationLine: 'line-through',
-    color: 'gray',
-  }
-})
+
+function createStyles(theme : themeType) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    insideContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 10,
+      padding: 10,
+      width: '100%',
+      maxWidth: 1024,
+      marginHorizontal: 'auto',
+      pointerEvents: 'auto',
+    },
+    textInput: {
+      flex: 1,
+      borderColor: 'gray',
+      borderWidth: 1,
+      borderRadius: 5,
+      padding: 10,
+      marginRight: 10,
+      fontSize: 18,
+      fontFamily: 'Inter_500Medium',
+      minWidth: 0,
+      color: theme.text
+    },
+    addButton: {
+      backgroundColor: theme.background,
+      borderRadius: 5,
+      padding: 10,
+    },
+    addButtonText: {
+      fontSize: 18,
+      color: theme.text,
+    },
+    todoItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 4,
+      padding: 10,
+      borderBottomColor: 'gray',
+      borderBottomWidth: 1,
+      width: '100%',
+      maxWidth: 1024,
+      marginHorizontal: 'auto',
+      pointerEvents: 'auto',
+    },
+    todoText: {
+      flex: 1,
+      fontSize: 18,
+      fontFamily: 'Inter_500Medium',
+      color: theme.text,
+    },
+    completedText: {
+      textDecorationLine: 'line-through',
+      color: 'gray',
+    },
+    toggleButtonContainer: {
+      marginLeft: 10,
+    },
+    toggleButton: {
+      width: 36
+    }
+  })
+}
