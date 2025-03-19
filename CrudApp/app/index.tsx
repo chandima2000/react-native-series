@@ -9,11 +9,14 @@ import Animated, { LinearTransition } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ThemeContext } from "@/context/ThemeContext";
+import { useRouter } from "expo-router";
 
 export default function Index() {
 
   const [todos, setTodos] = useState(data.sort((a, b) => b.id - a.id));
   const [text, setText] = useState('');
+
+  const router = useRouter();
 
   const themeContext= useContext(ThemeContext);
 
@@ -96,14 +99,23 @@ export default function Index() {
     completed: boolean
   }
 
+  const handlePress = (id : number) => {
+    router.push(`/todos/${id}`)
+  }
+
   const renderItem = ({item} : {item : ItemProps}) => (
     <View style={styles.todoItem}>
-      <Text
-        style={[styles.todoText, item.completed && styles.completedText]}
-        onPress={() => toggleTodo(item.id)}
-      >
-        {item.title}
-      </Text>
+
+      <Pressable 
+        onPress={() => handlePress(item.id)}
+        onLongPress={() => toggleTodo(item.id)}>
+        <Text
+          style={[styles.todoText, item.completed && styles.completedText]}
+        >
+          {item.title}
+        </Text>
+      </Pressable>
+    
       <Pressable onPress={() => removeTodo(item.id)}>
         <MaterialCommunityIcons name="delete-circle" size={36} color="red" selectable={undefined} />
       </Pressable>
@@ -142,6 +154,8 @@ export default function Index() {
           itemLayoutAnimation={LinearTransition}
           keyboardDismissMode="interactive"
         />
+
+      
     </SafeAreaView>
   );
 }
